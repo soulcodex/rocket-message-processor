@@ -1,0 +1,25 @@
+name: rockets
+
+include:
+  - storage.docker-compose.yaml
+
+services:
+  message-processor:
+    restart: unless-stopped
+    build:
+      context: ../../
+      dockerfile: ./build/message-processor/Dockerfile
+    volumes:
+      - ../../deployments/docker-compose/.message-processor.env:/app/message-processor/.env
+    ports:
+      - "8080:8080" # HTTP
+#    healthcheck:
+#      test: [ "CMD", "curl", "-f", "http://localhost:8080/system/healthcheck" ]
+#      interval: 10s
+#      timeout: 5s
+#      retries: 5
+    depends_on:
+      postgres:
+        condition: service_healthy
+    env_file:
+      - .message-processor.env
