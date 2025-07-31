@@ -23,6 +23,11 @@ type PostgresConfig struct {
 	PostgresSSL    string `env:"SSL_MODE" envDefault:"disable"`
 }
 
+type RedisConfig struct {
+	RedisHosts    string `env:"HOSTS" envDefault:"localhost:6379"`
+	RedisPassword string `env:"PASSWORD" envDefault:""`
+}
+
 type HTTPConfig struct {
 	HTTPHost         string `env:"HOST" envDefault:"0.0.0.0"`
 	HTTPPort         int    `env:"PORT" envDefault:"8080"`
@@ -38,6 +43,7 @@ type Config struct {
 	AppConfig           `envPrefix:"APP_"`
 	HTTPConfig          `envPrefix:"HTTP_"`
 	PostgresConfig      `envPrefix:"POSTGRES_"`
+	RedisConfig         `envPrefix:"REDIS_"`
 	UncategorizedConfig `envPrefix:""`
 }
 

@@ -184,6 +184,12 @@ linters:
       - std-error-handling
     rules:
       - linters:
+          - errname
+        path: (errutil/.+.go|domain/.+.go)
+      - path: "internal/.*/application/.*/.*"
+        linters:
+          - dupl
+      - linters:
           - funlen
           - gocognit
           - gocyclo
