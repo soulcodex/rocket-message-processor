@@ -12,6 +12,11 @@
 - [golang-ci lint](https://github.com/golangci/golangci-lint)
 - [Moq](https://github.com/matryer/moq)
 
+## 🤔 Challenge decisions
+
+In order to keep this README clean and focused on the project setup, I've documented my decisions and design choices in
+a separate file called [DECISIONS.md](./DECISIONS.md)
+
 ## 📥 Installation
 
 Clone the repository using Git:
@@ -44,14 +49,7 @@ To start one the rockets message processor service in local, execute the followi
 just run
 ```
 
-### 🔄 Hot Reloading
-
-This repository uses [`Air`](https://github.com/air-verse/air) for hot-reloading during development.
-Make sure it’s installed by running `just install` before using it.
-
-> Modify `deployments/docker-compose/.<service_name>.air.toml` in the root directory to customize the Air configuration.
-
-## 🐳 Running using our `docker-compose` stack
+## 🐳 Running using a `docker-compose` stack
 
 To start the rockets message processor **Docker Compose** stack, run:
 
