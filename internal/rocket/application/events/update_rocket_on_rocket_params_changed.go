@@ -31,7 +31,7 @@ func (e *UpdateRocketOnRocketParamsChanged) Handle(ctx context.Context, evt Rock
 }
 
 func (e *UpdateRocketOnRocketParamsChanged) handleSpeedIncreased(ctx context.Context, evt *RocketSpeedIncreased) (interface{}, error) {
-	_, err := e.updater.Update(ctx, evt.RocketID, rocketdomain.WithLaunchSpeed(int64(evt.Amount), evt.OccurredOn))
+	_, err := e.updater.Update(ctx, evt.RocketID, rocketdomain.WithLaunchSpeedDelta(int64(evt.Amount), evt.OccurredOn))
 	if err != nil {
 		return nil, fmt.Errorf("error updating rocket: %w", err)
 	}
@@ -40,7 +40,7 @@ func (e *UpdateRocketOnRocketParamsChanged) handleSpeedIncreased(ctx context.Con
 }
 
 func (e *UpdateRocketOnRocketParamsChanged) handleSpeedDecreased(ctx context.Context, evt *RocketSpeedDecreased) (interface{}, error) {
-	_, err := e.updater.Update(ctx, evt.RocketID, rocketdomain.WithLaunchSpeed(int64(-evt.Amount), evt.OccurredOn))
+	_, err := e.updater.Update(ctx, evt.RocketID, rocketdomain.WithLaunchSpeedDelta(int64(-evt.Amount), evt.OccurredOn))
 	if err != nil {
 		return nil, fmt.Errorf("error updating rocket: %w", err)
 	}

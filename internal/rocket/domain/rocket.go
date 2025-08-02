@@ -44,13 +44,7 @@ func (r *Rocket) ChangeLaunchSpeed(speed LaunchSpeed, at time.Time) {
 		return
 	}
 
-	if speed < 0 && r.launchSpeed+speed < 0 {
-		r.launchSpeed = 0
-		r.updatedAt = at
-		return
-	}
-
-	r.launchSpeed += speed
+	r.launchSpeed = speed
 	r.updatedAt = at
 }
 

@@ -8,12 +8,16 @@ import (
 
 type RocketUpdaterFunc func(rocket *Rocket) error
 
-func WithLaunchSpeed(launchSpeed int64, at time.Time) RocketUpdaterFunc {
+func WithLaunchSpeedDelta(delta int64, at time.Time) RocketUpdaterFunc {
 	return func(rocket *Rocket) error {
-		speed, err := NewLaunchSpeed(launchSpeed)
+		current := rocket.launchSpeed.Value()
+		newSpeedValue := current + delta
+
+		speed, err := NewLaunchSpeed(newSpeedValue)
 		if err != nil {
-			return fmt.Errorf("invalid rocket launch speed: %w", err)
+			return fmt.Errorf("invalid rocket launch speed after delta: %w", err)
 		}
+
 		rocket.ChangeLaunchSpeed(speed, at)
 		return nil
 	}

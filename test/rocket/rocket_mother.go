@@ -15,6 +15,12 @@ func WithRocketID(id string) RocketMotherOpt {
 	}
 }
 
+func WithLaunchSpeed(speed int64) RocketMotherOpt {
+	return func(m *RocketMother) {
+		m.primitives.LaunchSpeed = speed
+	}
+}
+
 type RocketMother struct {
 	primitives rocketdomain.RocketPrimitives
 }
