@@ -7,13 +7,14 @@ import (
 type RocketPrimitives struct {
 	ID          string
 	RocketType  string
-	LaunchSpeed uint64
+	LaunchSpeed int64
 	Mission     string
 	CreatedAt   time.Time
 	UpdatedAt   time.Time
+	DeletedAt   *time.Time
 }
 
-func FromDomain(r *Rocket) RocketPrimitives {
+func primitivesFromDomain(r *Rocket) RocketPrimitives {
 	return RocketPrimitives{
 		ID:          r.id.String(),
 		RocketType:  r.rocketType.String(),
@@ -21,5 +22,6 @@ func FromDomain(r *Rocket) RocketPrimitives {
 		Mission:     r.mission.String(),
 		CreatedAt:   r.createdAt,
 		UpdatedAt:   r.updatedAt,
+		DeletedAt:   r.deletedAt,
 	}
 }

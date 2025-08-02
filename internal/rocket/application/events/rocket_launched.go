@@ -3,8 +3,7 @@ package rocketevents
 import (
 	"encoding/json"
 	"fmt"
-
-	"github.com/soulcodex/rockets-message-processor/pkg/messaging"
+	"time"
 )
 
 const (
@@ -12,72 +11,45 @@ const (
 )
 
 type RocketLaunched struct {
-	*messaging.BaseMessage
-
-	rocketType  string
-	launchSpeed uint64
-	mission     string
+	EventID     string
+	RocketID    string
+	RocketType  string
+	LaunchSpeed int64
+	Mission     string
+	OccurredOn  time.Time
 }
 
-func (e *RocketLaunched) Schema() string {
-	return "rocket_launched"
+func (e *RocketLaunched) Identifier() string {
+	return e.EventID
 }
 
-func (e *RocketLaunched) RocketType() string {
-	return e.rocketType
+func (e *RocketLaunched) BlockingKey() string {
+	return "rocket" + ":" + e.RocketID
 }
 
-func (e *RocketLaunched) LaunchSpeed() uint64 {
-	return e.launchSpeed
+func (e *RocketLaunched) Type() string {
+	return RocketLaunchedType
 }
 
-func (e *RocketLaunched) Mission() string {
-	return e.mission
-}
-
-func (e *RocketLaunched) UnmarshalJSON(data []byte) error {
-	// Ignore null, like in the main JSON package
-	if string(data) == rocketMessageNullContent || string(data) == `""` {
-		return nil
-	}
-
+func (e *RocketLaunched) FromRawEvent(rm *RocketEventRaw) error {
 	type rocketLaunchedData struct {
-		RocketType  string `json:"rocketType"`
-		LaunchSpeed uint64 `json:"launchSpeed"`
+		RocketType  string `json:"type"`
+		LaunchSpeed int64  `json:"launchSpeed"`
 		Mission     string `json:"mission"`
 	}
 
-	type rocketLaunchedAlias struct {
-		Metadata json.RawMessage    `json:"metadata"`
-		Message  rocketLaunchedData `json:"message"`
-	}
-
-	alias := rocketLaunchedAlias{}
-	if err := json.Unmarshal(data, &alias); err != nil {
-		return fmt.Errorf("rocket launched unmarshalling failed: %w", err)
-	}
-
-	var metadata RocketMessageMetadata
-	err := json.Unmarshal(alias.Metadata, &metadata)
+	var content rocketLaunchedData
+	err := json.Unmarshal(rm.Message, &content)
 	if err != nil {
-		return fmt.Errorf("rocket launched metadata conversion failed: %w", err)
+		return fmt.Errorf("rocket launched content conversion failed: %w", err)
 	}
 
-	baseMessage, err := messaging.NewBaseMessage(
-		RocketMessageID(metadata),
-		RocketLaunchedType,
-		alias.Metadata,
-		data,
-		metadata.MessageTime,
-	)
-	if err != nil {
-		return fmt.Errorf("rocket launched base message creation failed: %w", err)
-	}
-
-	e.BaseMessage = baseMessage
-	e.rocketType = alias.Message.RocketType
-	e.launchSpeed = alias.Message.LaunchSpeed
-	e.mission = alias.Message.Mission
+	e.EventID = rm.EventID()
+	e.RocketID = rm.Metadata.Channel
+	e.RocketType = content.RocketType
+	e.LaunchSpeed = content.LaunchSpeed
+	e.Mission = content.Mission
+	e.OccurredOn = rm.Metadata.MessageTime
 
 	return nil
 }

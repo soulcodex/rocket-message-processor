@@ -47,6 +47,11 @@ lint:
     go vet ./... && \
     golangci-lint run --timeout 2m
 
+run:
+    @echo -e "\n⚡ Running the application..."
+    @just install-env && echo -e "\n"
+    @go run cmd/message-processor/main.go
+
 # Start the application components through docker compose.
 up:
     docker compose \

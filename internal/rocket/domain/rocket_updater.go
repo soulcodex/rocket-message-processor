@@ -8,13 +8,13 @@ import (
 
 type RocketUpdaterFunc func(rocket *Rocket) error
 
-func WithLaunchSpeed(launchSpeed uint64, at time.Time) RocketUpdaterFunc {
+func WithLaunchSpeed(launchSpeed int64, at time.Time) RocketUpdaterFunc {
 	return func(rocket *Rocket) error {
 		speed, err := NewLaunchSpeed(launchSpeed)
 		if err != nil {
 			return fmt.Errorf("invalid rocket launch speed: %w", err)
 		}
-		rocket.IncreaseLaunchSpeed(speed, at)
+		rocket.ChangeLaunchSpeed(speed, at)
 		return nil
 	}
 }
@@ -26,6 +26,13 @@ func WithMission(mission string, at time.Time) RocketUpdaterFunc {
 			return fmt.Errorf("invalid mission: %w", err)
 		}
 		rocket.ChangeMission(newMission, at)
+		return nil
+	}
+}
+
+func WithSoftDeletion(at time.Time) RocketUpdaterFunc {
+	return func(rocket *Rocket) error {
+		rocket.Delete(at)
 		return nil
 	}
 }

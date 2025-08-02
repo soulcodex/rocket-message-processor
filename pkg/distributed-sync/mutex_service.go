@@ -49,34 +49,26 @@ func (rm *RedisMutexService) Mutex(ctx context.Context, key string, fn MutexCall
 		redsync.WithTimeoutFactor(redsyncDefaultTimeoutFactor),
 	)
 
-	lockRetryer := retry.NewRetryer().
-		Callback(func() (interface{}, error) {
-			return nil, rm.acquireLock(ctx, mutex)
-		}).
-		Times(int(rm.options.Retries))
-
-	if _, lockingErr := lockRetryer.Retry(); lockingErr != nil {
+	if _, lockingErr := retry.Do(func() (interface{}, error) {
+		return nil, rm.acquireLock(ctx, mutex)
+	}, int(rm.options.Retries)); lockingErr != nil {
 		rm.logger.Error().
 			Ctx(ctx).
 			Err(lockingErr).
-			Str("db.operation.parameter.mutex_key", mutex.Name()).
+			Str("mutex_key", mutex.Name()).
 			Msg("error locking mutex sync")
 		return nil, NewMutexLockingError(key).Wrap(lockingErr)
 	}
 
 	result, err := fn()
 
-	unlockRetryer := retry.NewRetryer().
-		Callback(func() (interface{}, error) {
-			return nil, rm.releaseLock(ctx, mutex)
-		}).
-		Times(int(rm.options.Retries))
-
-	if _, unlockingErr := unlockRetryer.Retry(); unlockingErr != nil {
+	if _, unlockingErr := retry.Do(func() (interface{}, error) {
+		return nil, rm.releaseLock(ctx, mutex)
+	}, int(rm.options.Retries)); unlockingErr != nil {
 		rm.logger.Error().
 			Ctx(ctx).
 			Err(unlockingErr).
-			Str("db.operation.parameter.mutex_key", mutex.Name()).
+			Str("mutex_key", mutex.Name()).
 			Msg("error unlocking mutex sync")
 		return nil, NewMutexUnlockingError(key).Wrap(unlockingErr)
 	}

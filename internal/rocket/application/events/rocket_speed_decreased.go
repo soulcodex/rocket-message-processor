@@ -3,8 +3,7 @@ package rocketevents
 import (
 	"encoding/json"
 	"fmt"
-
-	"github.com/soulcodex/rockets-message-processor/pkg/messaging"
+	"time"
 )
 
 const (
@@ -12,58 +11,39 @@ const (
 )
 
 type RocketSpeedDecreased struct {
-	*messaging.BaseMessage
-
-	amount float64
+	EventID    string
+	RocketID   string
+	Amount     float64
+	OccurredOn time.Time
 }
 
-func (e *RocketSpeedDecreased) Schema() string {
-	return "rocket_speed_decreased"
+func (e *RocketSpeedDecreased) Identifier() string {
+	return e.EventID
 }
 
-func (e *RocketSpeedDecreased) Amount() float64 {
-	return e.amount
+func (e *RocketSpeedDecreased) BlockingKey() string {
+	return "rocket" + ":" + e.RocketID
 }
 
-func (e *RocketSpeedDecreased) UnmarshalJSON(data []byte) error {
-	// Ignore null, like in the main JSON package
-	if string(data) == "null" || string(data) == `""` {
-		return nil
-	}
+func (e *RocketSpeedDecreased) Type() string {
+	return RocketSpeedDecreasedType
+}
 
-	type rocketSpeedIncreasedData struct {
+func (e *RocketSpeedDecreased) FromRawEvent(rm *RocketEventRaw) error {
+	type rocketSpeedDecreasedData struct {
 		Amount float64 `json:"by"`
 	}
 
-	type rocketLaunchedAlias struct {
-		Metadata json.RawMessage          `json:"metadata"`
-		Message  rocketSpeedIncreasedData `json:"message"`
-	}
-
-	alias := rocketLaunchedAlias{}
-	if err := json.Unmarshal(data, &alias); err != nil {
-		return fmt.Errorf("rocket speed decreased unmarshalling failed: %w", err)
-	}
-
-	var metadata RocketMessageMetadata
-	err := json.Unmarshal(alias.Metadata, &metadata)
+	var content rocketSpeedDecreasedData
+	err := json.Unmarshal(rm.Message, &content)
 	if err != nil {
-		return fmt.Errorf("rocket speed decreased metadata conversion failed: %w", err)
+		return fmt.Errorf("rocket speed decreased content conversion failed: %w", err)
 	}
 
-	baseMessage, err := messaging.NewBaseMessage(
-		RocketMessageID(metadata),
-		RocketSpeedDecreasedType,
-		alias.Metadata,
-		data,
-		metadata.MessageTime,
-	)
-	if err != nil {
-		return fmt.Errorf("rocket speed decreased base message creation failed: %w", err)
-	}
-
-	e.BaseMessage = baseMessage
-	e.amount = alias.Message.Amount
+	e.EventID = rm.EventID()
+	e.RocketID = rm.Metadata.Channel
+	e.Amount = content.Amount
+	e.OccurredOn = rm.Metadata.MessageTime
 
 	return nil
 }

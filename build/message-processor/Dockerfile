@@ -9,6 +9,7 @@ COPY ./go.mod ./go.mod
 COPY ./go.sum ./go.sum
 COPY ./cmd ./cmd
 COPY ./configs ./configs
+COPY ./pkg ./pkg
 COPY ./internal ./internal
 COPY ./schemas ./schemas
 

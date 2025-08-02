@@ -1,5 +1,8 @@
 # Ignore files and directories that should not be tracked by Git
 
+# Challenge binary files
+rockets
+
 # IDE's and editor settings
 .idea
 .env

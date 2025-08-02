@@ -3,8 +3,7 @@ package rocketevents
 import (
 	"encoding/json"
 	"fmt"
-
-	"github.com/soulcodex/rockets-message-processor/pkg/messaging"
+	"time"
 )
 
 const (
@@ -12,58 +11,39 @@ const (
 )
 
 type RocketMissionChanged struct {
-	*messaging.BaseMessage
-
-	newMission string
+	EventID    string
+	RocketID   string
+	NewMission string
+	OccurredOn time.Time
 }
 
-func (e *RocketMissionChanged) Schema() string {
-	return "rocket_mission_changed"
+func (e *RocketMissionChanged) Identifier() string {
+	return e.EventID
 }
 
-func (e *RocketMissionChanged) NewMission() string {
-	return e.newMission
+func (e *RocketMissionChanged) BlockingKey() string {
+	return "rocket" + ":" + e.RocketID
 }
 
-func (e *RocketMissionChanged) UnmarshalJSON(data []byte) error {
-	// Ignore null, like in the main JSON package
-	if string(data) == "null" || string(data) == `""` {
-		return nil
+func (e *RocketMissionChanged) Type() string {
+	return RocketMissionChangedType
+}
+
+func (e *RocketMissionChanged) FromRawEvent(rm *RocketEventRaw) error {
+	type rocketMissionChangedData struct {
+		NewMission string `json:"newMission"`
 	}
 
-	type rocketSpeedIncreasedData struct {
-		Mission string `json:"newMission"`
-	}
-
-	type rocketLaunchedAlias struct {
-		Metadata json.RawMessage          `json:"metadata"`
-		Message  rocketSpeedIncreasedData `json:"message"`
-	}
-
-	alias := rocketLaunchedAlias{}
-	if err := json.Unmarshal(data, &alias); err != nil {
-		return fmt.Errorf("rocker mission changed unmarshalling failed: %w", err)
-	}
-
-	var metadata RocketMessageMetadata
-	err := json.Unmarshal(alias.Metadata, &metadata)
+	var content rocketMissionChangedData
+	err := json.Unmarshal(rm.Message, &content)
 	if err != nil {
-		return fmt.Errorf("rocker mission changed metadata conversion failed: %w", err)
+		return fmt.Errorf("rocket mission changed content conversion failed: %w", err)
 	}
 
-	baseMessage, err := messaging.NewBaseMessage(
-		RocketMessageID(metadata),
-		RocketMissionChangedType,
-		alias.Metadata,
-		data,
-		metadata.MessageTime,
-	)
-	if err != nil {
-		return fmt.Errorf("rocker mission changed base message creation failed: %w", err)
-	}
-
-	e.BaseMessage = baseMessage
-	e.newMission = alias.Message.Mission
+	e.EventID = rm.EventID()
+	e.RocketID = rm.Metadata.Channel
+	e.NewMission = content.NewMission
+	e.OccurredOn = rm.Metadata.MessageTime
 
 	return nil
 }

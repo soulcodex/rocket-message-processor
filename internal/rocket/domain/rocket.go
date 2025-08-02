@@ -11,6 +11,7 @@ type Rocket struct {
 	mission     Mission
 	createdAt   time.Time
 	updatedAt   time.Time
+	deletedAt   *time.Time
 }
 
 func NewRocket(
@@ -31,23 +32,42 @@ func NewRocket(
 }
 
 func (r *Rocket) Primitives() RocketPrimitives {
-	return FromDomain(r)
+	return primitivesFromDomain(r)
 }
 
-func (r *Rocket) IncreaseLaunchSpeed(increase LaunchSpeed, at time.Time) {
-	if at.IsZero() || at.After(r.updatedAt) {
+func (r *Rocket) ID() RocketID {
+	return r.id
+}
+
+func (r *Rocket) ChangeLaunchSpeed(speed LaunchSpeed, at time.Time) {
+	if r.deletedAt != nil || at.IsZero() || at.After(r.updatedAt) {
 		return
 	}
 
-	r.launchSpeed += increase
+	if speed < 0 && r.launchSpeed+speed < 0 {
+		r.launchSpeed = 0
+		r.updatedAt = at
+		return
+	}
+
+	r.launchSpeed += speed
 	r.updatedAt = at
 }
 
 func (r *Rocket) ChangeMission(newMission Mission, at time.Time) {
-	if at.IsZero() || at.After(r.updatedAt) {
+	if r.deletedAt != nil || at.IsZero() || at.After(r.updatedAt) {
 		return
 	}
 
 	r.mission = newMission
 	r.updatedAt = at
+}
+
+func (r *Rocket) Delete(at time.Time) {
+	if r.deletedAt != nil || at.IsZero() || at.After(r.updatedAt) {
+		return
+	}
+
+	r.updatedAt = at
+	r.deletedAt = &at
 }

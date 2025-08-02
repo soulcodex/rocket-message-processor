@@ -6,22 +6,17 @@ import (
 	domainvalidation "github.com/soulcodex/rockets-message-processor/pkg/domain/validation"
 )
 
-const (
-	minRocketLaunchSpeed = 1
-)
-
 var (
 	ErrInvalidRocketLaunchSpeedProvided = domainvalidation.NewError("invalid rocket launch speed provided")
 )
 
-type LaunchSpeed uint64
+type LaunchSpeed int64
 
-func NewLaunchSpeed(speed uint64) (LaunchSpeed, error) {
+func NewLaunchSpeed(speed int64) (LaunchSpeed, error) {
 	launchSpeed := LaunchSpeed(speed)
 
 	validation := domainvalidation.NewValidator(
-		domainvalidation.NotEmpty[uint64](),
-		domainvalidation.Min[uint64](minRocketLaunchSpeed),
+		domainvalidation.NotEmpty[int64](),
 	)
 
 	if err := validation.Validate(speed); err != nil {
@@ -31,10 +26,14 @@ func NewLaunchSpeed(speed uint64) (LaunchSpeed, error) {
 	return launchSpeed, nil
 }
 
-func (s LaunchSpeed) Value() uint64 {
-	return uint64(s)
+func (s LaunchSpeed) IsZero() bool {
+	return int64(s) == 0
+}
+
+func (s LaunchSpeed) Value() int64 {
+	return int64(s)
 }
 
 func (s LaunchSpeed) String() string {
-	return strconv.FormatUint(uint64(s), 10)
+	return strconv.FormatInt(int64(s), 10)
 }

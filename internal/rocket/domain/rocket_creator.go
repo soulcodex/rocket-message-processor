@@ -9,7 +9,7 @@ import (
 type RocketCreateParams struct {
 	ID          string
 	RocketType  string
-	LaunchSpeed uint64
+	LaunchSpeed int64
 	Mission     string
 	At          time.Time
 }

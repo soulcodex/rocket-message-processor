@@ -3,8 +3,7 @@ package rocketevents
 import (
 	"encoding/json"
 	"fmt"
-
-	"github.com/soulcodex/rockets-message-processor/pkg/messaging"
+	"time"
 )
 
 const (
@@ -12,58 +11,39 @@ const (
 )
 
 type RocketExploded struct {
-	*messaging.BaseMessage
-
-	reason string
+	EventID    string
+	RocketID   string
+	Reason     string
+	OccurredOn time.Time
 }
 
-func (e *RocketExploded) Schema() string {
-	return "rocket_launched"
+func (e *RocketExploded) Identifier() string {
+	return e.EventID
 }
 
-func (e *RocketExploded) Reason() string {
-	return e.reason
+func (e *RocketExploded) BlockingKey() string {
+	return "rocket" + ":" + e.RocketID
 }
 
-func (e *RocketExploded) UnmarshalJSON(data []byte) error {
-	// Ignore null, like in the main JSON package
-	if string(data) == rocketMessageNullContent || string(data) == `""` {
-		return nil
-	}
+func (e *RocketExploded) Type() string {
+	return RocketExplodedType
+}
 
-	type rocketLaunchedData struct {
+func (e *RocketExploded) FromRawEvent(rm *RocketEventRaw) error {
+	type rocketExplodedData struct {
 		Reason string `json:"reason"`
 	}
 
-	type rocketLaunchedAlias struct {
-		Metadata json.RawMessage    `json:"metadata"`
-		Message  rocketLaunchedData `json:"message"`
-	}
-
-	alias := rocketLaunchedAlias{}
-	if err := json.Unmarshal(data, &alias); err != nil {
-		return fmt.Errorf("rocket exploded unmarshalling failed: %w", err)
-	}
-
-	var metadata RocketMessageMetadata
-	err := json.Unmarshal(alias.Metadata, &metadata)
+	var content rocketExplodedData
+	err := json.Unmarshal(rm.Message, &content)
 	if err != nil {
-		return fmt.Errorf("rocket exploded metadata conversion failed: %w", err)
+		return fmt.Errorf("rocket exploded content conversion failed: %w", err)
 	}
 
-	baseMessage, err := messaging.NewBaseMessage(
-		RocketMessageID(metadata),
-		RocketExplodedType,
-		alias.Metadata,
-		data,
-		metadata.MessageTime,
-	)
-	if err != nil {
-		return fmt.Errorf("rocket exploded base message creation failed: %w", err)
-	}
-
-	e.BaseMessage = baseMessage
-	e.reason = alias.Message.Reason
+	e.EventID = rm.EventID()
+	e.RocketID = rm.Metadata.Channel
+	e.Reason = content.Reason
+	e.OccurredOn = rm.Metadata.MessageTime
 
 	return nil
 }

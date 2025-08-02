@@ -24,7 +24,7 @@ type PostgresConfig struct {
 }
 
 type RedisConfig struct {
-	RedisHosts    string `env:"HOSTS" envDefault:"localhost:6379"`
+	RedisURL      string `env:"URL" envDefault:"redis://localhost:6379"`
 	RedisPassword string `env:"PASSWORD" envDefault:""`
 }
 
