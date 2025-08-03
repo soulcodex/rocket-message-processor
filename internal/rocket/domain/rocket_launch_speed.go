@@ -11,13 +11,17 @@ var (
 	ErrInvalidRocketLaunchSpeedProvided = domain.NewError("invalid rocket launch speed provided")
 )
 
+const (
+	maximumLaunchSpeed = 1000000 // Random maximum speed in km/h
+)
+
 type LaunchSpeed int64
 
 func NewLaunchSpeed(speed int64) (LaunchSpeed, error) {
 	launchSpeed := LaunchSpeed(speed)
 
 	validation := domainvalidation.NewValidator(
-		domainvalidation.NotEmpty[int64](),
+		domainvalidation.Max[int64](maximumLaunchSpeed),
 	)
 
 	if err := validation.Validate(speed); err != nil {

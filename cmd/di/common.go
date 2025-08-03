@@ -61,7 +61,7 @@ func MustInitCommonServices(ctx context.Context) *CommonServices {
 	router := httpserver.New(routerOpts...)
 
 	eventBus := eventbus.InitEventBus()
-	deduplicator := messaging.NewInMemoryDeduplicator()
+	deduplicator := messaging.NewDefaultRedisDeduplicator(redisClient)
 	mutexService := distributedsync.NewRedisMutexService(redisClient, appLogger)
 	uuidProvider := utils.NewRandomUUIDProvider()
 

@@ -11,7 +11,6 @@ COPY ./cmd ./cmd
 COPY ./configs ./configs
 COPY ./pkg ./pkg
 COPY ./internal ./internal
-COPY ./schemas ./schemas
 
 # Download modules and delete the ssh key
 RUN go mod download
@@ -32,6 +31,5 @@ WORKDIR /home/message-processor
 
 # Copy the Pre-built binary file from the previous stage
 COPY --from=builder message-processor/cmd/message-processor/message-processor .
-COPY --from=builder message-processor/schemas ./schemas
 
 CMD ./message-processor

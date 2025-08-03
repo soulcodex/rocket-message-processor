@@ -12,6 +12,12 @@
   metrics, but I haven't implemented any observability solution in this service to keep it simple.
 * The service is designed following DDD (Domain Driven Design) principles, offering
   a clear separation of concerns, modular structure and a focus on business logic.
+* In order to process rocket events received and affect the rocket state consistently, I've decided to use a
+  distributed mutex to ensure that only one instance of the service can process a rocket event at a time, which is a
+  common requirement in distributed systems. In a realistic scenario and with a higher throughput of messages, it
+  would better to use a more sophisticated mechanism to guarantee the consistency such as optimistic locking,
+  pessimistic locking or a distributed transaction manager, but for the sake of simplicity and clarity, I've chosen to
+  use a distributed mutex in this case.
 * I usually split the repositories in writer and reader interfaces but in this case I've decided to keep it simple
   and have a single interface for the rocket repository, but it can be easily split later if needed.
 * In terms of persistence, I've chosen to use PostgresSQL as the database at the beginning, which is a robust and
@@ -20,12 +26,8 @@
   real-world scenario, it would be essential to use a persistent storage solution like PostgresSQL or another database
   for obvious reasons.
 * Due to the absence of an identifier in the message received, I've decided to use the elements in the message metadata
-  to create a unique identifier and implement a deduplication mechanism in memory to avoid processing the same message
-  multiple times, which is a common requirement in message processing systems.
-* The deduplication mechanism is implemented in memory using a map as structure to store the processed messages,
-  which is a simple and clear way but in a realistic scenario, where you might have a large amount of messages and
-  service run in various instances (replicas) it would be essential to think about an state of deduplication
-  distributed, otherwise you wont get the expected results.
+  to create a unique identifier and implement a deduplication mechanism to avoid processing the same message multiple
+  times, which is a common requirement in message processing systems.
 * I do believe that the messages structure created on my own to approach the problem can be absolutely better in terms
   of its basis. To foster a common base structure for all the messages I've to be more consistent, offer a better DX and
   reduce the boilerplate code that's going to make the code even more open to changes and evolution in the future.
@@ -57,15 +59,14 @@
   needed.
 * I've used a set of tools already written by me for my own usage in different side projects, such as
   Zerolog for logging, a retry mechanism without backoff, a distributed mutex, message bus, utils and semantic error
-  handling
-  if there's any doubt about these components, I'll be happy to explain them in detail.
+  handling, if there's any doubt about these components, I'll be happy to explain them in detail.
 * I've decided to not validate the rocket type at domain level due to not knowing the full list of rocket types
   that will be used now or added in the future, but it can be easily added later if the types are finite or static
   defined.
-* I do believe that events serialization could be better handled. I'd rather in fact create an standard message
-  structure for all the messaging to avoid repeat code, foster consistency across messaging and make event creation
-  easier to maintain and evolve in the future, but I didn't it in this case to keep the service simple and focused on
-  the message processing logic, but in a real-world scenario, it would be essential to handle message serialization
-  and deserialization properly.
+* I do believe that events serialization could be better handled. I'd rather in fact create a standard message
+  structure in the future for all the messaging to avoid repeat code, foster consistency across messaging and make event
+  creation easier to maintain and evolve in the future, but I didn't it in this case to keep the service simple and
+  focused on the message processing logic, but in a real-world scenario, it would be essential to handle message
+  serialization and deserialization properly.
 * I've taken an small shortcut in terms of HTTP error handling, I've decided to use a simple error handling strategy
   that returns a generic error messages instead of a more detailed one, but it can be easily improved later if needed.

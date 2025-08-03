@@ -16,10 +16,6 @@ import (
 	"github.com/soulcodex/rockets-message-processor/pkg/messaging"
 )
 
-var (
-	rocketEventDeduplicationWindowInSeconds = 30
-)
-
 func HandleReceiveRocketMessageV1HTTP(
 	eventBus eventbus.EventBus,
 	mutex distributedsync.MutexService,
@@ -144,7 +140,7 @@ func markRocketEventAsProcessed(
 		return errutil.NewError("rocket event is not a message")
 	}
 
-	markErr := deduplicator.MarkProcessed(ctx, message, rocketEventDeduplicationWindowInSeconds)
+	markErr := deduplicator.MarkProcessed(ctx, message)
 	if markErr != nil {
 		return fmt.Errorf("failed to mark rocket event as processed: %w", markErr)
 	}
