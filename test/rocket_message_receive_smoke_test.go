@@ -1,7 +1,6 @@
 package test
 
 import (
-	"bytes"
 	"fmt"
 	"net/http"
 	"net/http/httptest"
@@ -13,6 +12,7 @@ import (
 	"github.com/soulcodex/rockets-message-processor/cmd/di"
 	rocketdomain "github.com/soulcodex/rockets-message-processor/internal/rocket/domain"
 	rockettest "github.com/soulcodex/rockets-message-processor/test/rocket"
+	testutils "github.com/soulcodex/rockets-message-processor/test/utils"
 )
 
 type RocketMessageReceiveSmokeTestSuite struct {
@@ -99,14 +99,7 @@ func (suite *RocketMessageReceiveSmokeTestSuite) executeJSONRequest(
 	path string,
 	body []byte,
 ) *httptest.ResponseRecorder {
-	req, err := http.NewRequestWithContext(suite.T().Context(), verb, path, bytes.NewBuffer(body))
-	suite.Require().NoError(err)
-
-	req.Header.Set("Content-Type", "application/json")
-
-	httpRecorder := httptest.NewRecorder()
-	suite.common.Router.GetMuxRouter().ServeHTTP(httpRecorder, req)
-	return httpRecorder
+	return testutils.ExecuteJSONRequest(suite.T(), suite.common.Router, verb, path, body)
 }
 
 func (suite *RocketMessageReceiveSmokeTestSuite) rocketLaunchedEventBody(

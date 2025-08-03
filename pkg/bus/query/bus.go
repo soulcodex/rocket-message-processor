@@ -1,4 +1,4 @@
-package eventbus
+package querybus
 
 import (
 	"github.com/soulcodex/rockets-message-processor/pkg/bus"
@@ -6,6 +6,6 @@ import (
 
 type Bus = bus.Bus
 
-func InitEventBus() Bus {
+func InitQueryBus() Bus {
 	return bus.InitSyncBus()
 }

@@ -17,7 +17,7 @@ import (
 )
 
 func HandleReceiveRocketMessageV1HTTP(
-	eventBus eventbus.EventBus,
+	eventBus eventbus.Bus,
 	mutex distributedsync.MutexService,
 	deduplicator messaging.Deduplicator,
 	responseWriter *httpserver.JSONResponseWriter,
@@ -79,7 +79,7 @@ func HandleReceiveRocketMessageV1HTTP(
 
 func handleEventWithDeduplication(
 	ctx context.Context,
-	eventBus eventbus.EventBus,
+	eventBus eventbus.Bus,
 	mutex distributedsync.MutexService,
 	deduplicator messaging.Deduplicator,
 	rocketEvent rocketevents.RocketEvent,

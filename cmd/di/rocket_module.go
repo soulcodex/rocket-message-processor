@@ -4,6 +4,7 @@ import (
 	"context"
 
 	rocketevents "github.com/soulcodex/rockets-message-processor/internal/rocket/application/events"
+	rocketqueries "github.com/soulcodex/rockets-message-processor/internal/rocket/application/queries"
 	rocketdomain "github.com/soulcodex/rockets-message-processor/internal/rocket/domain"
 	rocketentrypoint "github.com/soulcodex/rockets-message-processor/internal/rocket/infrastructure/entrypoint"
 	rocketpersistence "github.com/soulcodex/rockets-message-processor/internal/rocket/infrastructure/persistence"
@@ -32,6 +33,14 @@ func NewRocketModule(_ context.Context, common *CommonServices) *RocketModule {
 		),
 	)
 
+	common.Router.Get(
+		"/rockets/{rocket_id}",
+		rocketentrypoint.HandleFindRocketV1HTTP(
+			common.QueryBus,
+			httpserver.NewJSONResponseMiddleware(common.Logger),
+		),
+	)
+
 	launchEvtHandler := rocketevents.NewCreateRocketOnRocketLaunched(creator)
 	bus.MustRegister(common.EventBus, &rocketevents.RocketLaunched{}, launchEvtHandler)
 
@@ -42,6 +51,9 @@ func NewRocketModule(_ context.Context, common *CommonServices) *RocketModule {
 	bus.MustRegister(common.EventBus, &rocketevents.RocketMissionChanged{}, paramsChangeEvtHandler)
 	bus.MustRegister(common.EventBus, &rocketevents.RocketSpeedIncreased{}, paramsChangeEvtHandler)
 	bus.MustRegister(common.EventBus, &rocketevents.RocketSpeedDecreased{}, paramsChangeEvtHandler)
+
+	findRocketByIDHandler := rocketqueries.NewFindRocketByIDQueryHandler(rocketRepo)
+	bus.MustRegister(common.QueryBus, &rocketqueries.FindRocketByIDQuery{}, findRocketByIDHandler)
 
 	return &RocketModule{
 		Repository: rocketRepo,

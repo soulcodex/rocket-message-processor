@@ -8,6 +8,7 @@ import (
 
 	"github.com/soulcodex/rockets-message-processor/configs"
 	eventbus "github.com/soulcodex/rockets-message-processor/pkg/bus/event"
+	querybus "github.com/soulcodex/rockets-message-processor/pkg/bus/query"
 	distributedsync "github.com/soulcodex/rockets-message-processor/pkg/distributed-sync"
 	httpserver "github.com/soulcodex/rockets-message-processor/pkg/http-server"
 	"github.com/soulcodex/rockets-message-processor/pkg/logger"
@@ -19,7 +20,8 @@ type CommonServices struct {
 	Config       *configs.Config
 	Logger       logger.ZerologLogger
 	RedisClient  *redis.Client
-	EventBus     eventbus.EventBus
+	EventBus     eventbus.Bus
+	QueryBus     querybus.Bus
 	Mutex        distributedsync.MutexService
 	Deduplicator messaging.Deduplicator
 	Router       *httpserver.Router
@@ -61,6 +63,7 @@ func MustInitCommonServices(ctx context.Context) *CommonServices {
 	router := httpserver.New(routerOpts...)
 
 	eventBus := eventbus.InitEventBus()
+	queryBus := querybus.InitQueryBus()
 	deduplicator := messaging.NewDefaultRedisDeduplicator(redisClient)
 	mutexService := distributedsync.NewRedisMutexService(redisClient, appLogger)
 	uuidProvider := utils.NewRandomUUIDProvider()
@@ -70,6 +73,7 @@ func MustInitCommonServices(ctx context.Context) *CommonServices {
 		Logger:       appLogger,
 		RedisClient:  redisClient,
 		EventBus:     eventBus,
+		QueryBus:     queryBus,
 		Deduplicator: deduplicator,
 		Mutex:        mutexService,
 		Router:       &router,
