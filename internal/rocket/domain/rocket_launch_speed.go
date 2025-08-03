@@ -3,11 +3,12 @@ package rocketdomain
 import (
 	"strconv"
 
+	"github.com/soulcodex/rockets-message-processor/pkg/domain"
 	domainvalidation "github.com/soulcodex/rockets-message-processor/pkg/domain/validation"
 )
 
 var (
-	ErrInvalidRocketLaunchSpeedProvided = domainvalidation.NewError("invalid rocket launch speed provided")
+	ErrInvalidRocketLaunchSpeedProvided = domain.NewError("invalid rocket launch speed provided")
 )
 
 type LaunchSpeed int64

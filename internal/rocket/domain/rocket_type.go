@@ -1,8 +1,8 @@
 package rocketdomain
 
 import (
+	"github.com/soulcodex/rockets-message-processor/pkg/domain"
 	domainvalidation "github.com/soulcodex/rockets-message-processor/pkg/domain/validation"
-	"github.com/soulcodex/rockets-message-processor/pkg/errutil"
 )
 
 const (
@@ -10,7 +10,7 @@ const (
 )
 
 var (
-	ErrInvalidRocketTypeProvided = errutil.NewError("invalid rocket type provided")
+	ErrInvalidRocketTypeProvided = domain.NewError("invalid rocket type provided")
 )
 
 type RocketType string

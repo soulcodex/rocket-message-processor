@@ -1,12 +1,12 @@
 package rocketdomain
 
 import (
+	"github.com/soulcodex/rockets-message-processor/pkg/domain"
 	domainvalidation "github.com/soulcodex/rockets-message-processor/pkg/domain/validation"
-	"github.com/soulcodex/rockets-message-processor/pkg/errutil"
 )
 
 var (
-	ErrInvalidMissionProvided = errutil.NewError("invalid rocket mission provided")
+	ErrInvalidMissionProvided = domain.NewError("invalid rocket mission provided")
 )
 
 type Mission string
