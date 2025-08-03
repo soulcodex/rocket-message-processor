@@ -21,6 +21,19 @@ func WithLaunchSpeed(speed int64) RocketMotherOpt {
 	}
 }
 
+func WithSoftDeletion() RocketMotherOpt {
+	return func(m *RocketMother) {
+		now := time.Now()
+		m.primitives.DeletedAt = &now
+	}
+}
+
+func WithUpdateDate(at time.Time) RocketMotherOpt {
+	return func(m *RocketMother) {
+		m.primitives.UpdatedAt = at
+	}
+}
+
 type RocketMother struct {
 	primitives rocketdomain.RocketPrimitives
 }
@@ -40,13 +53,24 @@ func NewRocketMother(opts ...RocketMotherOpt) *RocketMother {
 func (m *RocketMother) Build(t *testing.T) *rocketdomain.Rocket {
 	t.Helper()
 
-	return rocketdomain.NewRocket(
+	at := m.primitives.CreatedAt
+	if m.primitives.UpdatedAt.After(at) {
+		at = m.primitives.UpdatedAt
+	}
+
+	rocket := rocketdomain.NewRocket(
 		rocketdomain.RocketID(m.primitives.ID),
 		rocketdomain.RocketType(m.primitives.RocketType),
 		rocketdomain.LaunchSpeed(m.primitives.LaunchSpeed),
 		rocketdomain.Mission(m.primitives.Mission),
-		m.primitives.CreatedAt,
+		at,
 	)
+
+	if m.primitives.DeletedAt != nil {
+		rocket.Delete(time.Now())
+	}
+
+	return rocket
 }
 
 func newRocketPrimitives() rocketdomain.RocketPrimitives {

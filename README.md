@@ -65,6 +65,11 @@ just down
 
 > This executes the `docker-compose.yml` file located in `deployments/docker-compose/`.
 
+## 📃 OpenAPI Documentation
+
+The OpenAPI documentation for the rockets message processor is available on [api/openapi.yaml](api/openapi.yaml). You
+can view it in your browser or use tools like Swagger UI to interact with the API.
+
 ## 📁 Project Structure
 
 For a deeper dive into project structure best practices, check out the

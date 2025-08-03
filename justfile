@@ -25,7 +25,7 @@ install-git-hook:
 # install the default environment file
 install-env:
     @echo -e "\n🔧 Installing environment files..." && \
-    [ ! -f .env ] && cp .env.example .env || echo "❌ .env already exists, skipping copy." && \
+    [ ! -f .env ] && cp .env.default .env || echo "❌ .env already exists, skipping copy." && \
     [ ! -f test/.test.env ] && cp .env test/.test.env || echo "❌ test/.test.env already exists, skipping copy."
 
 # Install required tools and deps.
@@ -47,6 +47,12 @@ lint:
     go vet ./... && \
     golangci-lint run --timeout 2m
 
+# Run tests suites
+test:
+    @echo -e "\n🔍 Running tests..."
+    @go test --race ./... -count=1 --timeout=30s
+
+# Run service locally.
 run:
     @echo -e "\n⚡ Running the application..."
     @just install-env && echo -e "\n"
@@ -66,4 +72,6 @@ down:
 
 # Generate go code from go:generate directives.
 go-generate:
-    go generate ./...
+    @echo -e "\n📦 Generating files..."
+    @go generate ./...
+    @echo -e "\n✅ Files generation done..."

@@ -63,7 +63,7 @@ func TestRocketUpdater_Update(t *testing.T) {
 			name: "should decrease rocket speed with delta",
 			id:   "122c31b0-a3c4-411a-bc07-5f342f0d78e4",
 			updates: []rocketdomain.RocketUpdaterFunc{
-				rocketdomain.WithLaunchSpeedDelta(-1000, now),
+				rocketdomain.WithLaunchSpeedDelta(int64(-1000), time.Now().Add(30*time.Minute)),
 			},
 			validation: func(t *testing.T, rocket *rocketdomain.Rocket) {
 				assert.Equal(t, int64(4000), rocket.Primitives().LaunchSpeed)
@@ -75,7 +75,7 @@ func TestRocketUpdater_Update(t *testing.T) {
 					).Build(t), nil
 				}
 				repo.SaveFunc = func(_ context.Context, r *rocketdomain.Rocket) error {
-					require.Equal(t, int64(4000), r.Primitives().LaunchSpeed)
+					assert.Equal(t, int64(4000), r.Primitives().LaunchSpeed)
 					return nil
 				}
 			},
@@ -97,7 +97,7 @@ func TestRocketUpdater_Update(t *testing.T) {
 		{
 			name:    "should soft delete rocket",
 			id:      "122c31b0-a3c4-411a-bc07-5f342f0d78e4",
-			updates: []rocketdomain.RocketUpdaterFunc{rocketdomain.WithSoftDeletion(now)},
+			updates: []rocketdomain.RocketUpdaterFunc{rocketdomain.WithSoftDeletion(time.Now().Add(30 * time.Minute))},
 			validation: func(t *testing.T, rocket *rocketdomain.Rocket) {
 				assert.NotNil(t, rocket.Primitives().DeletedAt)
 			},

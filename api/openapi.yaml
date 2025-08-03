@@ -1,0 +1,231 @@
+openapi: 3.0.3
+info:
+  title: Rocket Message Processor
+  version: 1.0.0
+  description: API for receiving and processing rocket-related domain events.
+
+paths:
+  /messages:
+    post:
+      summary: Receive a rocket event message
+      description: Accepts various rocket event messages such as launch, speed changes, explosion, or mission updates.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RocketEvent'
+            examples:
+              RocketLaunched:
+                value:
+                  metadata:
+                    channel: "193270a9-c9cf-404a-8f83-838e71d9ae67"
+                    messageNumber: 1
+                    messageTime: "2022-02-02T19:39:05.86337+01:00"
+                    messageType: "RocketLaunched"
+                  message:
+                    type: "Falcon-9"
+                    launchSpeed: 500
+                    mission: "ARTEMIS"
+              RocketExploded:
+                value:
+                  metadata:
+                    channel: "193270a9-c9cf-404a-8f83-838e71d9ae67"
+                    messageNumber: 2
+                    messageTime: "2022-02-02T20:00:00+01:00"
+                    messageType: "RocketExploded"
+                  message:
+                    reason: "PRESSURE_VESSEL_FAILURE"
+      responses:
+        '202':
+          description: Message accepted for processing
+        '400':
+          description: Invalid request format
+
+  /rockets/{rocket_id}:
+    get:
+      summary: Get rocket details by ID
+      description: Returns the current state of a specific rocket.
+      parameters:
+        - name: rocket_id
+          in: path
+          required: true
+          description: UUID of the rocket
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Rocket found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Rocket'
+              example:
+                id: "4223a5d9-ce73-4bf9-9352-46414fe6f6e6"
+                rocket_type: "Falcon 9"
+                launch_speed: 5000
+                mission: "ARTEMIS"
+                created_at: "2025-08-03T23:38:59.629200224+02:00"
+                updated_at: "2025-08-03T23:38:59.629200224+02:00"
+        '404':
+          description: Rocket not found
+
+  /rockets:
+    get:
+      summary: List all rockets
+      description: Returns a list of rockets. Supports sorting by specific fields using the `sort` query parameter.
+      parameters:
+        - name: sort
+          in: query
+          required: false
+          description: |
+            Sort the results by one of the following fields:
+            - `created_at`, `-created_at`
+            - `updated_at`, `-updated_at`
+            - `launch_speed`, `-launch_speed`
+
+            A minus prefix `-` indicates descending order.
+          schema:
+            type: string
+            enum:
+              - created_at
+              - -created_at
+              - updated_at
+              - -updated_at
+              - launch_speed
+              - -launch_speed
+      responses:
+        '200':
+          description: A list of rockets
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Rocket'
+              example:
+                - id: "11703bd0-46fd-49c4-8157-328aad80f870"
+                  rocket_type: "Falcon 9"
+                  launch_speed: 3000
+                  mission: "ARTEMIS"
+                  created_at: "2025-08-04T02:41:03.947206974+02:00"
+                  updated_at: "2025-08-04T02:41:03.947206974+02:00"
+                - id: "3197c901-d0a4-4f2a-bef0-17e1ca8a629c"
+                  rocket_type: "Falcon 9"
+                  launch_speed: 5000
+                  mission: "ARTEMIS"
+                  created_at: "2025-08-03T23:41:03.947254065+02:00"
+                  updated_at: "2025-08-03T23:41:03.947254065+02:00"
+
+components:
+  schemas:
+    RocketEvent:
+      type: object
+      required:
+        - metadata
+        - message
+      properties:
+        metadata:
+          type: object
+          required:
+            - channel
+            - messageNumber
+            - messageTime
+            - messageType
+          properties:
+            channel:
+              type: string
+              format: uuid
+            messageNumber:
+              type: integer
+            messageTime:
+              type: string
+              format: date-time
+            messageType:
+              type: string
+              enum:
+                - RocketLaunched
+                - RocketSpeedIncreased
+                - RocketSpeedDecreased
+                - RocketExploded
+                - RocketMissionChanged
+        message:
+          oneOf:
+            - $ref: '#/components/schemas/RocketLaunched'
+            - $ref: '#/components/schemas/RocketSpeedIncreased'
+            - $ref: '#/components/schemas/RocketSpeedDecreased'
+            - $ref: '#/components/schemas/RocketExploded'
+            - $ref: '#/components/schemas/RocketMissionChanged'
+
+    RocketLaunched:
+      type: object
+      required:
+        - type
+        - launchSpeed
+        - mission
+      properties:
+        type:
+          type: string
+        launchSpeed:
+          type: number
+        mission:
+          type: string
+
+    RocketSpeedIncreased:
+      type: object
+      required:
+        - by
+      properties:
+        by:
+          type: number
+
+    RocketSpeedDecreased:
+      type: object
+      required:
+        - by
+      properties:
+        by:
+          type: number
+
+    RocketExploded:
+      type: object
+      required:
+        - reason
+      properties:
+        reason:
+          type: string
+
+    RocketMissionChanged:
+      type: object
+      required:
+        - newMission
+      properties:
+        newMission:
+          type: string
+
+    Rocket:
+      type: object
+      required:
+        - id
+        - rocket_type
+        - launch_speed
+        - mission
+        - created_at
+        - updated_at
+      properties:
+        id:
+          type: string
+          format: uuid
+        rocket_type:
+          type: string
+        launch_speed:
+          type: number
+        mission:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time

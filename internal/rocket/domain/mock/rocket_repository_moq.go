@@ -25,6 +25,9 @@ var _ rocketdomain.RocketRepository = &RocketRepositoryMock{}
 //			SaveFunc: func(ctx context.Context, r *rocketdomain.Rocket) error {
 //				panic("mock out the Save method")
 //			},
+//			SearchFunc: func(ctx context.Context, sortBy string, asc bool) (rocketdomain.RocketCollection, error) {
+//				panic("mock out the Search method")
+//			},
 //		}
 //
 //		// use mockedRocketRepository in code that requires rocketdomain.RocketRepository
@@ -37,6 +40,9 @@ type RocketRepositoryMock struct {
 
 	// SaveFunc mocks the Save method.
 	SaveFunc func(ctx context.Context, r *rocketdomain.Rocket) error
+
+	// SearchFunc mocks the Search method.
+	SearchFunc func(ctx context.Context, sortBy string, asc bool) (rocketdomain.RocketCollection, error)
 
 	// calls tracks calls to the methods.
 	calls struct {
@@ -54,9 +60,19 @@ type RocketRepositoryMock struct {
 			// R is the r argument value.
 			R *rocketdomain.Rocket
 		}
+		// Search holds details about calls to the Search method.
+		Search []struct {
+			// Ctx is the ctx argument value.
+			Ctx context.Context
+			// SortBy is the sortBy argument value.
+			SortBy string
+			// Asc is the asc argument value.
+			Asc bool
+		}
 	}
-	lockFind sync.RWMutex
-	lockSave sync.RWMutex
+	lockFind   sync.RWMutex
+	lockSave   sync.RWMutex
+	lockSearch sync.RWMutex
 }
 
 // Find calls FindFunc.
@@ -128,5 +144,45 @@ func (mock *RocketRepositoryMock) SaveCalls() []struct {
 	mock.lockSave.RLock()
 	calls = mock.calls.Save
 	mock.lockSave.RUnlock()
+	return calls
+}
+
+// Search calls SearchFunc.
+func (mock *RocketRepositoryMock) Search(ctx context.Context, sortBy string, asc bool) (rocketdomain.RocketCollection, error) {
+	if mock.SearchFunc == nil {
+		panic("RocketRepositoryMock.SearchFunc: method is nil but RocketRepository.Search was just called")
+	}
+	callInfo := struct {
+		Ctx    context.Context
+		SortBy string
+		Asc    bool
+	}{
+		Ctx:    ctx,
+		SortBy: sortBy,
+		Asc:    asc,
+	}
+	mock.lockSearch.Lock()
+	mock.calls.Search = append(mock.calls.Search, callInfo)
+	mock.lockSearch.Unlock()
+	return mock.SearchFunc(ctx, sortBy, asc)
+}
+
+// SearchCalls gets all the calls that were made to Search.
+// Check the length with:
+//
+//	len(mockedRocketRepository.SearchCalls())
+func (mock *RocketRepositoryMock) SearchCalls() []struct {
+	Ctx    context.Context
+	SortBy string
+	Asc    bool
+} {
+	var calls []struct {
+		Ctx    context.Context
+		SortBy string
+		Asc    bool
+	}
+	mock.lockSearch.RLock()
+	calls = mock.calls.Search
+	mock.lockSearch.RUnlock()
 	return calls
 }

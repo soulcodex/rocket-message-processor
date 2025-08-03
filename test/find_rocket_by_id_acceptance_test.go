@@ -63,7 +63,7 @@ func (suite *FindRocketByIDAcceptanceTestSuite) TestFindRocketByID_Success() {
 func (suite *FindRocketByIDAcceptanceTestSuite) assertRocket(body []byte) {
 	suite.T().Helper()
 
-	var rocketResponse rocketentrypoint.FindRocketByIDResponse
+	var rocketResponse rocketentrypoint.RocketResponseV1
 	err := json.Unmarshal(body, &rocketResponse)
 	suite.NoError(err, "failed to unmarshal rocket response")
 

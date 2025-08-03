@@ -2,7 +2,6 @@ package rocketentrypoint
 
 import (
 	"net/http"
-	"time"
 
 	"github.com/gorilla/mux"
 
@@ -13,26 +12,6 @@ import (
 	httpserver "github.com/soulcodex/rockets-message-processor/pkg/http-server"
 	"github.com/soulcodex/rockets-message-processor/pkg/utils"
 )
-
-type FindRocketByIDResponse struct {
-	ID          string    `json:"id"`
-	RocketType  string    `json:"rocket_type"`
-	LaunchSpeed int64     `json:"launch_speed"`
-	Mission     string    `json:"mission"`
-	CreatedAt   time.Time `json:"created_at"`
-	UpdatedAt   time.Time `json:"updated_at"`
-}
-
-func newFindRocketByIDResponseFromPrimitives(r rocketqueries.FindRocketByIDResponse) FindRocketByIDResponse {
-	return FindRocketByIDResponse{
-		ID:          r.ID,
-		RocketType:  r.RocketType,
-		LaunchSpeed: r.LaunchSpeed,
-		Mission:     r.Mission,
-		CreatedAt:   r.CreatedAt,
-		UpdatedAt:   r.UpdatedAt,
-	}
-}
 
 func HandleFindRocketV1HTTP(
 	queryBus querybus.Bus,
@@ -52,13 +31,13 @@ func HandleFindRocketV1HTTP(
 
 		findQuery := &rocketqueries.FindRocketByIDQuery{RocketID: rocketID}
 
-		resp, err := bus.DispatchWithResponse[*rocketqueries.FindRocketByIDQuery, rocketqueries.FindRocketByIDResponse](
+		resp, err := bus.DispatchWithResponse[*rocketqueries.FindRocketByIDQuery, rocketqueries.RocketResponse](
 			queryBus,
 		)(r.Context(), findQuery)
 
 		switch {
 		case err == nil:
-			response := newFindRocketByIDResponseFromPrimitives(resp)
+			response := newRocketResponseV1(resp)
 			responseWriter.WriteResponse(r.Context(), w, response, http.StatusOK)
 		case rocketdomain.IsRocketNotFoundError(err):
 			responseWriter.WriteErrorResponse(r.Context(), w, []string{"rocket not found"}, http.StatusNotFound)

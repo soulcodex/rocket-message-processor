@@ -12,23 +12,3 @@ services:
       start_period: 10s
     environment:
       - REDIS_PORT=6379
-  postgres:
-    image: postgres:14.7
-    ports:
-      - "5432:5432"
-    volumes:
-      - postgres-data:/var/lib/postgresql/data
-      - ./postgres/init:/docker-entrypoint-initdb.d
-    healthcheck:
-      test: [ "CMD-SHELL", "pg_isready -U rockets_message_processor -d rockets_message_processor" ]
-      interval: 60s
-      timeout: 10s
-      retries: 5
-      start_period: 10s
-    environment:
-      - POSTGRES_PASSWORD=rockets_message_processor
-      - POSTGRES_USER=rockets_message_processor_role
-      - POSTGRES_DB=rockets_message_processor
-
-volumes:
-  postgres-data:

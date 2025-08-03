@@ -2,16 +2,14 @@
 
 ## Architecture & Design 🤠
 
-* In terms of architecture, I've decided to create a simple service that's
-  able to process the message received through the HTTP endpoint `/messages`
-  like SQS does but without processing it in background and more oriented to
-  a push model rather than a pull model like I normally do consuming messages
-  from SQS.
+* In terms of architecture, I've decided to create a simple service that's able to process the message received through
+  the HTTP endpoint `/messages`like SQS does but without processing it in background and more oriented to a push model
+  rather than a pull model like I normally do consuming messages from SQS.
 * Observability is a key aspect but is out of scope for this challenge, but as you can see there are some components
   of mine that are already taking into account things like semantic conventions for logging, error handling and
   metrics, but I haven't implemented any observability solution in this service to keep it simple.
-* The service is designed following DDD (Domain Driven Design) principles, offering
-  a clear separation of concerns, modular structure and a focus on business logic.
+* The service is designed following DDD (Domain Driven Design) principles, offering a clear separation of concerns,
+  modular structure and a focus on business logic.
 * In order to process rocket events received and affect the rocket state consistently, I've decided to use a
   distributed mutex to ensure that only one instance of the service can process a rocket event at a time, which is a
   common requirement in distributed systems. In a realistic scenario and with a higher throughput of messages, it
@@ -31,12 +29,17 @@
 * I do believe that the messages structure created on my own to approach the problem can be absolutely better in terms
   of its basis. To foster a common base structure for all the messages I've to be more consistent, offer a better DX and
   reduce the boilerplate code that's going to make the code even more open to changes and evolution in the future.
-* I've decided to add an small DI (Dependency Injection) container to the service to manage dependencies and
+* I've decided to add a small DI (Dependency Injection) container to the service to manage dependencies and
   facilitate testing, which is a common practice in Go applications to improve modularity and testability, but it can
   be easily improved using a more sophisticated DI framework if needed in the future such as `wire` or similar.
 * The receiver HTTP handler is simple but isn't that clean and could be improved a lot in terms of
   error handling, validation, components used on it and response formatting, but it can be easily improved later if
   needed.
+* The rockets listing use case is implemented as a simple HTTP handler that returns a list of rockets in JSON format,
+  sorting has been implemented in memory only allowing to sort the rockets by creation date, update date and its launch
+  speed, it can be easily extended to support more sorting options or pagination if needed in the future.
+* Sorting params capture in the HTTP handler has been made simple and straightforward, but IMO it must be in the proper
+  http server package or as http util to fetch these kind of params in a more generic way.
 
 ## Tooling 🔧
 
@@ -47,16 +50,16 @@
   practices and standards accompanied by a git hook automatically installed on setup.
 * I've decided to user `moq` for mocking dependencies in tests, which simplifies the process of creating mock
   implementations for interfaces.
+* I've omitted the usage of `air` to provide hot reloading during development, but it can be easily added later if
+  needed.
 
 ## Shortcuts ✍
 
-* I've decided to omit the healthcheck endpoint as it is not a requirement for the challenge, but
-  it can be easily added later even more if we're aiming for run our service in a container runtime such as k8s.
+* I've decided to omit the healthcheck endpoint as it's not a requirement for the challenge, but
+  it can be easily added later even more if we're aiming to run our service in a container runtime such as k8s.
 * I've omitted the usage of a message broker like SQS or Kafka to keep the service simple and focused on the
   message processing logic, but in a real-world scenario, it would be essential to handle message delivery and
   processing such as retries, dead-letter queues, etc.
-* I've omitted the usage of `air` to provide hot reloading during development, but it can be easily added later if
-  needed.
 * I've used a set of tools already written by me for my own usage in different side projects, such as
   Zerolog for logging, a retry mechanism without backoff, a distributed mutex, message bus, utils and semantic error
   handling, if there's any doubt about these components, I'll be happy to explain them in detail.

@@ -40,7 +40,7 @@ func (r *Rocket) ID() RocketID {
 }
 
 func (r *Rocket) ChangeLaunchSpeed(speed LaunchSpeed, at time.Time) {
-	if r.deletedAt != nil || at.IsZero() || at.After(r.updatedAt) {
+	if r.deletedAt != nil || at.IsZero() || r.updatedAt.After(at) {
 		return
 	}
 
@@ -49,7 +49,7 @@ func (r *Rocket) ChangeLaunchSpeed(speed LaunchSpeed, at time.Time) {
 }
 
 func (r *Rocket) ChangeMission(newMission Mission, at time.Time) {
-	if r.deletedAt != nil || at.IsZero() || at.After(r.updatedAt) {
+	if r.deletedAt != nil || at.IsZero() || r.updatedAt.After(at) {
 		return
 	}
 
@@ -58,7 +58,7 @@ func (r *Rocket) ChangeMission(newMission Mission, at time.Time) {
 }
 
 func (r *Rocket) Delete(at time.Time) {
-	if r.deletedAt != nil || at.IsZero() || at.After(r.updatedAt) {
+	if r.deletedAt != nil || at.IsZero() || r.updatedAt.After(at) {
 		return
 	}
 

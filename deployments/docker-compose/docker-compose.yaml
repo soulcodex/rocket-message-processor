@@ -13,15 +13,8 @@ services:
       - ../../deployments/docker-compose/.message-processor.env:/app/message-processor/.env
     ports:
       - "8080:8080" # HTTP
-#    healthcheck:
-#      test: [ "CMD", "curl", "-f", "http://localhost:8080/system/healthcheck" ]
-#      interval: 10s
-#      timeout: 5s
-#      retries: 5
     depends_on:
       redis:
-        condition: service_healthy
-      postgres:
         condition: service_healthy
     env_file:
       - .message-processor.env

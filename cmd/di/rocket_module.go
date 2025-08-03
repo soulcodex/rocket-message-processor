@@ -41,6 +41,15 @@ func NewRocketModule(_ context.Context, common *CommonServices) *RocketModule {
 		),
 	)
 
+	common.Router.Get(
+		"/rockets",
+		rocketentrypoint.HandleSearchRocketsV1HTTP(
+			common.QueryBus,
+			httpserver.NewJSONResponseMiddleware(common.Logger),
+		),
+	)
+
+	// Event bus handlers registration
 	launchEvtHandler := rocketevents.NewCreateRocketOnRocketLaunched(creator)
 	bus.MustRegister(common.EventBus, &rocketevents.RocketLaunched{}, launchEvtHandler)
 
@@ -52,8 +61,12 @@ func NewRocketModule(_ context.Context, common *CommonServices) *RocketModule {
 	bus.MustRegister(common.EventBus, &rocketevents.RocketSpeedIncreased{}, paramsChangeEvtHandler)
 	bus.MustRegister(common.EventBus, &rocketevents.RocketSpeedDecreased{}, paramsChangeEvtHandler)
 
+	// Query bus handlers registration
 	findRocketByIDHandler := rocketqueries.NewFindRocketByIDQueryHandler(rocketRepo)
 	bus.MustRegister(common.QueryBus, &rocketqueries.FindRocketByIDQuery{}, findRocketByIDHandler)
+
+	searchRocketsHandler := rocketqueries.NewSearchRocketsQueryHandler(rocketRepo)
+	bus.MustRegister(common.QueryBus, &rocketqueries.SearchRocketsQuery{}, searchRocketsHandler)
 
 	return &RocketModule{
 		Repository: rocketRepo,
